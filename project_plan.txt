@@ -1,0 +1,107 @@
+PROJECT OVERVIEW
+- Goal: Build a Spotify-style song recommendation engine that suggests tracks similar to a chosen song using audio features and metadata.
+- Current state:
+  - A single notebook (`Notebooks/dataProcessing.ipynb`) loads `dataset/dataset1.csv`, drops an `Unnamed: 0` column, removes nulls, uppercases column names, explodes multiple artists into separate rows, converts `EXPLICIT` to int, and creates `DURATION_MIN`.
+  - A preliminary feature list is defined (danceability, energy, loudness, speechiness, acousticness, instrumentalness, liveness, valence, tempo), but no model training or recommendation logic is implemented.
+  - `dataset/cleaned_dataset.csv` and `dataset/dataset2.csv` exist; they appear to be alternative/derived datasets but are not used in code.
+  - No package/dependency file or application layer is present.
+
+TECH STACK
+- Languages: Python (notebook-based workflow).
+- Libraries used: `pandas`, `numpy` (from the notebook).
+- Likely needed additions:
+  - `scikit-learn` for preprocessing, similarity search, and evaluation.
+  - `scipy` for fast distance computations.
+  - `joblib` or `pickle` for model/artifact persistence.
+  - `streamlit` or `flask` for a simple UI/API (optional).
+  - `matplotlib`/`seaborn` for exploratory plots (optional).
+
+DATA PIPELINE
+- Current handling:
+  - Loads `dataset/dataset1.csv`.
+  - Drops `Unnamed: 0`, removes nulls.
+  - Standardizes column names to uppercase.
+  - Splits multiple `ARTISTS` by `;` and explodes rows.
+  - Converts `EXPLICIT` to 0/1.
+  - Computes `DURATION_MIN` from `DURATION_MS` (note: currently divides by 6000, which should be 60000 for ms→min).
+- Required preprocessing steps:
+  - Fix duration conversion to `DURATION_MS / 60000`.
+  - Handle duplicates (same track_id across multiple artists).
+  - Normalize/standardize numeric features for similarity.
+  - Remove or impute remaining missing values if any.
+  - Validate/clean outliers (e.g., loudness, tempo).
+- Suggestions for improvement:
+  - Build a reproducible pipeline function/script (not just notebook).
+  - Save a cleaned feature matrix and metadata table for fast lookup.
+  - Add train/validation splits for evaluation, even for recommender metrics.
+
+RECOMMENDATION SYSTEM DESIGN
+- Content-Based Filtering:
+  - Use track-level audio features (danceability, energy, etc.) to compute similarity.
+  - Best fit for current data because `dataset1.csv` includes rich audio features and no explicit user interaction data.
+- Collaborative Filtering:
+  - Requires user–item interactions or implicit feedback (not currently in the repo).
+  - Not applicable unless new user behavior data is added.
+- Hybrid Approach:
+  - Combine content similarity with popularity or user preferences if interactions are later collected.
+- Best fit now:
+  - Content-based filtering is the most practical and immediate approach using the existing dataset.
+
+IMPLEMENTATION ROADMAP
+Phase 1: Data Cleaning & Preparation
+- Fix duration calculation.
+- Standardize column names and types.
+- Remove duplicates and handle missing values consistently.
+- Save cleaned dataset and metadata index.
+
+Phase 2: Feature Engineering
+- Select numeric audio features.
+- Scale/normalize features.
+- Optionally add derived features (energy×valence, tempo buckets, etc.).
+- Build a feature matrix aligned with track IDs.
+
+Phase 3: Model Building
+- Compute similarity (cosine similarity or k-NN).
+- Build a lookup that returns top-N similar tracks for a given `track_id`.
+- Add filtering options (same genre, explicit filter, artist diversity).
+
+Phase 4: Evaluation
+- Offline checks: sanity tests and manual inspection.
+- If user data exists later, measure precision@K, recall@K, or NDCG.
+
+Phase 5: Deployment (optional)
+- Save artifacts (scaler, feature matrix, index).
+- Provide a simple CLI or web endpoint to query recommendations.
+
+MODEL DETAILS
+- Suggested algorithms:
+  - Cosine similarity on standardized feature vectors.
+  - k-NN (e.g., `NearestNeighbors` from scikit-learn).
+  - Optional: matrix factorization only if user–item data becomes available.
+- Input features:
+  - `DANCEABILITY`, `ENERGY`, `LOUDNESS`, `SPEECHINESS`,
+    `ACOUSTICNESS`, `INSTRUMENTALNESS`, `LIVENESS`,
+    `VALENCE`, `TEMPO`, (optionally `DURATION_MIN`).
+- Recommendation flow:
+  - Given a track ID, fetch its feature vector.
+  - Compute similarities to all tracks.
+  - Return top-N with metadata (track_name, artists, album, genre).
+
+FILE STRUCTURE IMPROVEMENTS
+- Proposed layout:
+  - `data/`
+  - `notebooks/`
+  - `src/`
+  - `src/data/` (loading/cleaning)
+  - `src/features/` (feature engineering)
+  - `src/models/` (similarity / k-NN)
+  - `src/recommend/` (query logic)
+  - `artifacts/` (saved scalers, matrices)
+  - `tests/`
+  - `requirements.txt` or `pyproject.toml`
+
+FUTURE ENHANCEMENTS
+- Add user-based or session-based recommendations with listening history.
+- Blend content similarity with popularity/recency signals.
+- Real-time recommendations with caching and approximate nearest neighbors (FAISS/Annoy).
+- Web app integration for interactive search and recommendations.
