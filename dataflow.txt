@@ -1,6 +1,16 @@
-User enters song name [string]
+User enters song name [json]
         ↓
 Fetch features via Spotify API [json]
+        ↓
+Scale features
+        ↓
+Find nearest neighbors in dataset
+        ↓
+Return top songs [json]
+
+        OR
+
+User enters song name within dataset [json]
         ↓
 Scale features
         ↓
