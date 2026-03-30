@@ -5,8 +5,8 @@ import torch.nn as nn
 class AutoEncoder(nn.Module):
     def __init__(self):
         super().__init__()
-        self.encoder = nn.Sequential(nn.Linear(9, 6), nn.ReLU(), nn.Linear(6, 4))
-        self.decoder = nn.Sequential(nn.Linear(4, 6), nn.ReLU(), nn.Linear(6, 9))
+        self.encoder = nn.Sequential(nn.Linear(9, 32), nn.ReLU(), nn.Linear(32, 16), nn.ReLU(), nn.Linear(16, 8))
+        self.decoder = nn.Sequential(nn.Linear(16, 8), nn.ReLU(), nn.Linear(16, 32), nn.ReLU(), nn.Linear(32, 9))
 
     def forward(self, x):
         embedding = self.encoder(x)

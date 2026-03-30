@@ -1,7 +1,7 @@
 import joblib
 import pandas as pd
 from flask import Flask, request, jsonify
-from Models.autoencoder import AutoEncoder
+from Packages.autoencoder import AutoEncoder
 
 app = Flask(__name__)
 
