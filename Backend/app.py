@@ -18,62 +18,31 @@ def get_song_suggestion(song_name_input, k = 5):
     song_tuple = rf.process.extract(song_name_input, df["TRACK_NAME"])[0]
     index = song_tuple[2] if song_tuple[1] > 65.0 else None
 
-    if (index == None):
-        return None, None, None
+    if index == None:
+        return None, None
 
     distances, indices = model_kn.kneighbors([embeddings[index]], n_neighbors = k + 1)
 
-    return song_tuple[0], df.iloc[indices[0][1:]][["TRACK_NAME", "TRACK_GENRE"]], distances
+    return df.iloc[index], df.iloc[indices[0][1:]]
 
-test_songs = [
-    # Your existing ones
-    "Kun Faya Kun",
-    "unravel",
-    "Boba Tunnel",
-    "Aniket Prantor",
-    "Choo Lo",
-    "Stairway to Heaven - Remaster",
-    
-    # Indian / Bollywood / similar
-    "Tum Hi Ho",
-    "Kesariya",
-    "Raabta",
-    "Agar Tum Saath Ho",
-    
-    # Anime / J-pop
-    "Gurenge",
-    "Silhouette",
-    "Again",
-    "Blue Bird",
-    
-    # Rock / Metal
-    "Bohemian Rhapsody",
-    "Smells Like Teen Spirit",
-    "Enter Sandman",
-    "Numb",
-    
-    # EDM / Electronic
-    "Animals",
-    "Titanium",
-    "Closer",
-    "Wake Me Up",
-    
-    # Chill / Acoustic
-    "Let Her Go",
-    "Perfect",
-    "All of Me",
-    "Photograph",
-    
-    # Random global mix
-    "Despacito",
-    "Shape of You",
-    "Believer",
-    "Someone You Loved"
-    "My heart will go on"
-]
+@app.route("/suggest", methods = ["GET"])
+def suggestion_api():
+    song_name = request.args.get("song")
+    k = request.args.get("k", default = 5, type = int)
 
-for song in test_songs:
-    song_name, suggestions, distances = get_song_suggestion(song)
-    print(f"\n\n---- {song_name} -----")
-    print(suggestions)
-    print(distances)
+    if not song_name:
+        return jsonify({ "error": "Song is needed" })
+
+    song, suggestions = get_song_suggestion(song_name, k)
+
+    if song is None:
+        return jsonify({ "error": "Unable to find songs" })
+
+    return jsonify({
+        "song": song.to_dict(),
+        "suggestions": suggestions.to_dict(orient = "records")
+    })
+
+# Only for testing, not for production
+if __name__ == "__main__":
+    app.run(host = "0.0.0.0", port = 5000)
