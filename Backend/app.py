@@ -21,7 +21,7 @@ def get_song_index(song_name):
 
     return result.index[0]
 
-def get_song(song_name_input, k = 5):
+def get_song_suggestion(song_name_input, k = 5):
     index = get_song_index(song_name_input)
 
     if (index == None):
@@ -31,6 +31,54 @@ def get_song(song_name_input, k = 5):
 
     return df.iloc[indices[0]][["TRACK_NAME", "TRACK_GENRE"]], distances
 
-x, y = get_song("Kun faya kun")
-print(x)
-print(y)
+test_songs = [
+    # Your existing ones
+    "Kun Faya Kun",
+    "unravel",
+    "Boba Tunnel",
+    "Aniket Prantor",
+    "Choo Lo",
+    "Stairway to Heaven - Remaster",
+    
+    # Indian / Bollywood / similar
+    "Tum Hi Ho",
+    "Kesariya",
+    "Raabta",
+    "Agar Tum Saath Ho",
+    
+    # Anime / J-pop
+    "Gurenge",
+    "Silhouette",
+    "Again",
+    "Blue Bird",
+    
+    # Rock / Metal
+    "Bohemian Rhapsody",
+    "Smells Like Teen Spirit",
+    "Enter Sandman",
+    "Numb",
+    
+    # EDM / Electronic
+    "Animals",
+    "Titanium",
+    "Closer",
+    "Wake Me Up",
+    
+    # Chill / Acoustic
+    "Let Her Go",
+    "Perfect",
+    "All of Me",
+    "Photograph",
+    
+    # Random global mix
+    "Despacito",
+    "Shape of You",
+    "Believer",
+    "Someone You Loved"
+]
+
+for song in test_songs:
+    songs, distances = get_song_suggestion(song)
+    print(f"\n\n---- {song} -----")
+    print(songs)
+    print(distances)
