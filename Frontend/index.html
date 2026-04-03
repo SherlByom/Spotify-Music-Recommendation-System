@@ -1,0 +1,50 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Song Recommendation System</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-orb orb-1"></div>
+  <div class="bg-orb orb-2"></div>
+  <div class="bg-grid"></div>
+
+  <main class="shell">
+    <header class="hero">
+      <div class="badge">AI Song Recommendation</div>
+      <h1>Discover your next favorite song</h1>
+      <p>
+        Type a song to let our model surface the closest matches.
+      </p>
+    </header>
+
+    <section class="panel">
+      <div class="input-wrap">
+        <label for="query">Search a song</label>
+        <div class="input-row">
+          <input id="query" type="text" placeholder="e.g., Blinding Lights, Shape of You" />
+          <button id="go" type="button">Recommend</button>
+        </div>
+        <div class="helper" id="helper">Try: "River Flows in You", "The Blue Danube"</div>
+      </div>
+
+      <div class="results" id="results">
+        <div class="results-head">Recommended for you</div>
+        <div class="cards" id="cards"></div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <span>Built with ❤️</span>
+      <span class="dot">•</span>
+      <span>Clean & Modern</span>
+      <span class="dot">•</span>
+      <span>Limited dataset due to us being broke students</span>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

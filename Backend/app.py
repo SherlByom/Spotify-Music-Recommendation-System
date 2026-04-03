@@ -43,6 +43,5 @@ def suggestion_api():
         "suggestions": suggestions.to_dict(orient = "records")
     })
 
-# Only for testing, not for production
-if __name__ == "__main__":
-    app.run(host = "0.0.0.0", port = 5000)
+# Only for testing, will be removed when deploying
+app.run(host = "0.0.0.0", port = 5000)
