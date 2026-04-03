@@ -17,20 +17,20 @@ def get_song_index(song_name):
     result = df[df["TRACK_NAME"].str.upper() == song_name.upper()]
 
     if len(result) == 0:
-        return "No Song Found"
+        return None
 
     return result.index[0]
 
 def get_song(song_name_input, k = 5):
     index = get_song_index(song_name_input)
 
-    if (index == "No Song Found"):
-        return index
+    if (index == None):
+        return None, None
 
     distances, indices = model_kn.kneighbors([embeddings[index]], n_neighbors = k + 1)
 
     return df.iloc[indices[0]][["TRACK_NAME", "TRACK_GENRE"]], distances
 
-x, y = get_song("Unravel")
+x, y = get_song("Kun faya kun")
 print(x)
 print(y)
