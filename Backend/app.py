@@ -1,7 +1,8 @@
 import joblib
 import pandas as pd
+import rapidfuzz as rf
+import Packages.autoencoder
 from flask import Flask, request, jsonify
-from Packages.autoencoder import AutoEncoder
 
 app = Flask(__name__)
 
@@ -13,23 +14,16 @@ df = pd.read_csv("Models/cleaned_dataset.csv")
 
 model_kn.fit(embeddings)
 
-def get_song_index(song_name):
-    result = df[df["TRACK_NAME"].str.upper() == song_name.upper()]
-
-    if len(result) == 0:
-        return None
-
-    return result.index[0]
-
 def get_song_suggestion(song_name_input, k = 5):
-    index = get_song_index(song_name_input)
+    song_tuple = rf.process.extract(song_name_input, df["TRACK_NAME"])[0]
+    index = song_tuple[2] if song_tuple[1] > 65.0 else None
 
     if (index == None):
-        return None, None
+        return None, None, None
 
     distances, indices = model_kn.kneighbors([embeddings[index]], n_neighbors = k + 1)
 
-    return df.iloc[indices[0]][["TRACK_NAME", "TRACK_GENRE"]], distances
+    return song_tuple[0], df.iloc[indices[0][1:]][["TRACK_NAME", "TRACK_GENRE"]], distances
 
 test_songs = [
     # Your existing ones
@@ -75,10 +69,11 @@ test_songs = [
     "Shape of You",
     "Believer",
     "Someone You Loved"
+    "My heart will go on"
 ]
 
 for song in test_songs:
-    songs, distances = get_song_suggestion(song)
-    print(f"\n\n---- {song} -----")
-    print(songs)
+    song_name, suggestions, distances = get_song_suggestion(song)
+    print(f"\n\n---- {song_name} -----")
+    print(suggestions)
     print(distances)
