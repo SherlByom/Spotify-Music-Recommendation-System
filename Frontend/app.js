@@ -20,7 +20,7 @@ function renderCards(items) {
     card.style.animation = `fadeUp 0.4s ease ${index * 0.08}s forwards`;
     card.innerHTML = `
       <div class="title">${item.TRACK_NAME}</div>
-      <div class="meta">${item.ARTISTS}</div>
+      <div class="meta">${item.ARTISTS.replaceAll(";", ", ")}</div>
       <div class="meta">${item.TRACK_GENRE}</div>
     `;
     cards.appendChild(card);
@@ -29,6 +29,8 @@ function renderCards(items) {
 
 async function handleRecommend() {
   const value = input.value.trim();
+  const k = 8;
+
   helper.style.color = "var(--muted)";
   helper.textContent = "Searchnig for suggestions, please wait..."
 
@@ -38,7 +40,7 @@ async function handleRecommend() {
   }
 
   try {
-    const suggestionUrl = `http://localhost:5000/suggest?song=${value}&k=5`;
+    const suggestionUrl = `http://localhost:5000/suggest?song=${value}&k=${k}`;
     const response = await fetch(suggestionUrl);
 
     if (!response.ok)
@@ -48,7 +50,7 @@ async function handleRecommend() {
     const song = result.song;
     const suggestions = result.suggestions;
 
-    helper.textContent = `Showing matches for: "${song.TRACK_NAME}"`;
+    helper.textContent = `Showing matches for: "${song.TRACK_NAME} - ${song.ARTISTS.replaceAll(";", ", ")}"`;
     renderCards(suggestions);
   }
   catch (error) {
