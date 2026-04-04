@@ -16,9 +16,20 @@ df = pd.read_csv("Models/cleaned_dataset.csv")
 
 model_kn.fit(embeddings)
 
+def get_song_index(song_name):
+    result = df[df["TRACK_NAME"].str.upper() == song_name.upper()]
+
+    if len(result) == 0:
+        return None
+
+    return result.index[0]
+
 def get_song_suggestion(song_name_input, k = 5):
-    song_tuple = rf.process.extract(song_name_input, df["TRACK_NAME"])[0]
-    index = song_tuple[2] if song_tuple[1] > 65.0 else None
+    index = get_song_index(song_name_input)
+    
+    if index == None:
+        song_tuple = rf.process.extract(song_name_input, df["TRACK_NAME"])[0]
+        index = song_tuple[2] if song_tuple[1] > 65.0 else None
 
     if index == None:
         return None, None
