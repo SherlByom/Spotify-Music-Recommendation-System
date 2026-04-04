@@ -2,9 +2,11 @@ import joblib
 import pandas as pd
 import rapidfuzz as rf
 import Packages.autoencoder
+from flask_cors import CORS
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)
+CORS(app)
 
 model = joblib.load("Models/autoencoder.pkl")
 model_kn = joblib.load("Models/knn.pkl")

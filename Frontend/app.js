@@ -42,20 +42,20 @@ async function handleRecommend() {
   try {
     const suggestionUrl = `http://localhost:5000/suggest?song=${value}&k=5`;
     const response = await fetch(suggestionUrl);
-    
+
     if (!response.ok)
       throw new Error();
 
-    const result = response.json();
+    const result = await response.json();
+
+    helper.textContent = `Showing matches for: "${value}"`;
+    renderCards(suggestions);
   }
-  catch(error) {
+  catch (error) {
     helper.style.color = "#ff4343";
     helper.textContent = `Something went wrong`;
     return;
   }
-
-  helper.textContent = `Showing matches for: "${value}"`;
-  renderCards(suggestions);
 }
 
 button.addEventListener("click", handleRecommend);
