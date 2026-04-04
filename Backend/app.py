@@ -28,8 +28,12 @@ def get_song_suggestion(song_name_input, k = 5):
     index = get_song_index(song_name_input)
     
     if index == None:
-        song_tuple = rf.process.extract(song_name_input, df["TRACK_NAME"])[0]
-        index = song_tuple[2] if song_tuple[1] > 65.0 else None
+        song_tuples = rf.process.extract(song_name_input.upper(), df["TRACK_NAME"].str.upper(), scorer = rf.fuzz.token_sort_ratio, limit = 10)
+
+        for song_tuple in song_tuples:
+            index = song_tuple[2] if (len(song_tuple[0]) > len(song_name_input) * 0.6) and (song_tuple[1] > 65) else None
+            if index:
+                break
 
     if index == None:
         return None, None
