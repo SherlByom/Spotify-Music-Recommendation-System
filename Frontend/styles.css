@@ -139,7 +139,7 @@ input[type="text"] {
 input[type="text"]:focus {
   outline: none;
   border-color: #ff43436f;
-  box-shadow: 0 0 10px 3px #ff43436f;
+  box-shadow: 0 0 7px 3px #ff43436f;
 }
 
 button {

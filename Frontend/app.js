@@ -1,6 +1,4 @@
-﻿const suggestions = [];
-
-const results = document.getElementById("results")
+﻿const results = document.getElementById("results");
 const cards = document.getElementById("cards");
 const helper = document.getElementById("helper");
 const input = document.getElementById("query");
@@ -20,11 +18,11 @@ function renderCards(items) {
     const card = document.createElement("div");
     card.className = "card";
     card.style.animation = `fadeUp 0.4s ease ${index * 0.08}s forwards`;
-    // card.innerHTML = `
-    //   <div class="title">${item.title}</div>
-    //   <div class="meta">${item.artist}</div>
-    //   <div class="meta">${item.genre}</div>
-    // `;
+    card.innerHTML = `
+      <div class="title">${item.TRACK_NAME}</div>
+      <div class="meta">${item.ARTISTS}</div>
+      <div class="meta">${item.TRACK_GENRE}</div>
+    `;
     cards.appendChild(card);
   });
 }
@@ -47,8 +45,10 @@ async function handleRecommend() {
       throw new Error();
 
     const result = await response.json();
+    const song = result.song;
+    const suggestions = result.suggestions;
 
-    helper.textContent = `Showing matches for: "${value}"`;
+    helper.textContent = `Showing matches for: "${song.TRACK_NAME}"`;
     renderCards(suggestions);
   }
   catch (error) {
@@ -74,4 +74,4 @@ style.textContent = `
 `;
 
 document.head.appendChild(style);
-renderCards(suggestions);
+results.style.display = "none";
