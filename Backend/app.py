@@ -14,8 +14,6 @@ scaler = joblib.load("Models/scaler.pkl")
 embeddings = joblib.load("Models/embeddings.pkl")
 df = pd.read_csv("Models/cleaned_dataset.csv")
 
-model_kn.fit(embeddings)
-
 def get_song_index(song_name):
     result = df[df["TRACK_NAME"].str.upper() == song_name.upper()]
 
@@ -26,12 +24,13 @@ def get_song_index(song_name):
 
 def get_song_suggestion(song_name_input, k = 5):
     index = get_song_index(song_name_input)
+    fuzzy_threshold = 75
     
     if index == None:
         song_tuples = rf.process.extract(song_name_input.upper(), df["TRACK_NAME"].str.upper(), scorer = rf.fuzz.token_sort_ratio, limit = 10)
 
         for song_tuple in song_tuples:
-            index = song_tuple[2] if (len(song_tuple[0]) > len(song_name_input) * 0.6) and (song_tuple[1] > 65) else None
+            index = song_tuple[2] if (len(song_tuple[0]) > len(song_name_input) * 0.6) and (song_tuple[1] > fuzzy_threshold) else None
             if index:
                 break
 
