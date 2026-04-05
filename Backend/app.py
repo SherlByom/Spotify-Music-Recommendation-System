@@ -4,6 +4,7 @@ import rapidfuzz as rf
 import Packages.autoencoder
 from flask_cors import CORS
 from flask import Flask, request, jsonify
+from youtubesearchpython import VideosSearch
 
 app = Flask(__name__)
 CORS(app)
@@ -13,6 +14,17 @@ model_kn = joblib.load("Models/knn.pkl")
 scaler = joblib.load("Models/scaler.pkl")
 embeddings = joblib.load("Models/embeddings.pkl")
 df = pd.read_csv("Models/cleaned_dataset.csv")
+
+def get_song_video(song_name, artists = None):
+    search_query = f"{song_name} {(artists or "").replace(';', ' ')}"
+    result = VideosSearch(search_query, limit = 1).result()["result"]
+
+    if not result:
+        return None, None
+
+    video = result[0]
+
+    return video["thumbnails"][0]["url"], video["link"]
 
 def get_song_index(song_name):
     result = df[df["TRACK_NAME"].str.upper() == song_name.upper()]
@@ -46,6 +58,8 @@ def suggestion_api():
     song_name = request.args.get("song")
     k = request.args.get("k", default = 5, type = int)
 
+    print(f"Request recieved for \"{song_name}\" \'{k}\'")
+
     if not song_name:
         return jsonify({ "error": "Song is needed" })
 
@@ -53,10 +67,18 @@ def suggestion_api():
 
     if song is None:
         return jsonify({ "error": "Unable to find songs" })
+    
+    song = song.to_dict()
+    suggestions = suggestions.to_dict(orient = "records")
+    
+    song["THUMBNAIL"], song["VIDEO_LINK"] = get_song_video(song["TRACK_NAME"], song["ARTISTS"])
+
+    for suggested_song in suggestions:
+        suggested_song["THUMBNAIL"], suggested_song["VIDEO_LINK"] = get_song_video(suggested_song["TRACK_NAME"], suggested_song["ARTISTS"])
 
     return jsonify({
-        "song": song.to_dict(),
-        "suggestions": suggestions.to_dict(orient = "records")
+        "song": song,
+        "suggestions": suggestions
     })
 
 # Only for testing, will be removed when deploying
