@@ -15,16 +15,24 @@ function renderCards(items) {
   }
 
   items.forEach((item, index) => {
+    const cardArea = document.createElement("a");
+    cardArea.href = `${item.VIDEO_LINK}`;
+    cardArea.target = "_blank";
+    cardArea.rel = "noopener";
+    cardArea.className = "card-area";
+
     const card = document.createElement("div");
     card.className = "card";
     card.style.animation = `fadeUp 0.4s ease ${index * 0.08}s forwards`;
-    card.style.setProperty("--album-art", `url(${item.THUMBNAIL})`);
+    card.style.setProperty("--thumbnail", `url(${item.THUMBNAIL})`);
     card.innerHTML = `
       <div class="title">${item.TRACK_NAME}</div>
       <div class="meta">${item.ARTISTS.replaceAll(";", ", ")}</div>
       <div class="meta">${item.TRACK_GENRE}</div>
     `;
-    cards.appendChild(card);
+
+    cardArea.appendChild(card);
+    cards.appendChild(cardArea);
   });
 }
 
