@@ -28,8 +28,10 @@ function renderCards(items) {
 }
 
 async function handleRecommend() {
-  const value = input.value.trim();
+  url = `http://localhost:5000/suggest?`; 
   const k = 8;
+
+  const value = input.value.trim();
 
   helper.style.color = "var(--muted)";
   helper.textContent = "Searchnig for suggestions, please wait..."
@@ -40,7 +42,7 @@ async function handleRecommend() {
   }
 
   try {
-    const suggestionUrl = `http://localhost:5000/suggest?song=${value}&k=${k}`;
+    const suggestionUrl = `${url}song=${value}&k=${k}`;
     const response = await fetch(suggestionUrl);
 
     if (!response.ok)
