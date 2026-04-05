@@ -193,10 +193,24 @@ button:hover {
 }
 
 .card:hover {
+  cursor: pointer;
   transform: translateY(-4px);
   border-color: #ff43436f;
 }
 
+.card:hover::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: 16px;
+  background-image: var(--album-art);
+  background-position: center;
+  background-size: cover;
+  background-blend-mode: overlay;
+  filter: blur(2px);
+}
+  
 .card .title {
   font-weight: 600;
   font-size: 1rem;
