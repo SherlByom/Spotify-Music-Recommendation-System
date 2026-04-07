@@ -5,6 +5,7 @@ import Packages.autoencoder
 from flask_cors import CORS
 from flask import Flask, request, jsonify
 from youtubesearchpython import VideosSearch
+from collections import defaultdict
 
 app = Flask(__name__)
 CORS(app)
@@ -15,25 +16,35 @@ scaler = joblib.load("Models/scaler.pkl")
 embeddings = joblib.load("Models/embeddings.pkl")
 df = pd.read_csv("Models/cleaned_dataset.csv")
 
+# Prebuilt dictionary for song lookup
+# Create mapping: song name → list of indices  
+name_to_index = defaultdict(list)
+for idx, name in enumerate(df["TRACK_NAME"]):
+    name_to_index[name.upper()].append(idx)
+
+
+#Video Search
 def get_song_video(song_name, artists = None):
-    search_query = f"{song_name} {(artists or "").replace(';', ' ')}"
-    result = VideosSearch(search_query, limit = 1).result()["result"]
-
-    if not result:
+    try:
+        search_query = f"{song_name} {(artists or "").replace(';', ' ')}"
+        result = VideosSearch(search_query, limit = 1).result()["result"]
+        if not result:
+            return None, None
+        video = result[0]
+        return video["thumbnails"][0]["url"], video["link"]
+    except Exception as e:
+        print(f"[YouTube Fetch Error]: {e}")
         return None, None
+#Video Search Updated With Try-Catch
 
-    video = result[0]
-
-    return video["thumbnails"][0]["url"], video["link"]
-
+# Optimized Song Index Finding
 def get_song_index(song_name):
-    result = df[df["TRACK_NAME"].str.upper() == song_name.upper()]
-
-    if len(result) == 0:
+    result = name_to_index.get(song_name.upper())
+    if not result:
         return None
+    return result[0]
 
-    return result.index[0]
-
+#Song Suggestion
 def get_song_suggestion(song_name_input, k = 5):
     index = get_song_index(song_name_input)
     fuzzy_threshold = 75
@@ -56,9 +67,9 @@ def get_song_suggestion(song_name_input, k = 5):
 @app.route("/suggest", methods = ["GET"])
 def suggestion_api():
     song_name = request.args.get("song")
-    k = request.args.get("k", default = 5, type = int)
+    k = request.args.get("k", default = 8, type = int)
 
-    print(f"Request recieved for \"{song_name}\" \'{k}\'")
+    print(f"Request received for \"{song_name}\" \'{k}\'")
 
     if not song_name:
         return jsonify({ "error": "Song is needed" })

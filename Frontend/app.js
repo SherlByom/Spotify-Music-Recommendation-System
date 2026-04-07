@@ -55,9 +55,13 @@ async function handleRecommend() {
     const response = await fetch(suggestionUrl);
 
     if (!response.ok)
-      throw new Error();
+      throw new Error("Network Error");
 
     const result = await response.json();
+    
+    if (result.error)
+      throw new Error(result.error);
+
     const song = result.song;
     const suggestions = result.suggestions;
 
