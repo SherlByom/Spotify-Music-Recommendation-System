@@ -3,9 +3,9 @@ import pandas as pd
 import rapidfuzz as rf
 import Packages.autoencoder
 from flask_cors import CORS
+from collections import defaultdict
 from flask import Flask, request, jsonify
 from youtubesearchpython import VideosSearch
-from collections import defaultdict
 
 app = Flask(__name__)
 CORS(app)
@@ -17,11 +17,12 @@ embeddings = joblib.load("Models/embeddings.pkl")
 df = pd.read_csv("Models/cleaned_dataset.csv")
 
 # Prebuilt dictionary for song lookup
-# map song name → list of indices  
 name_to_index = defaultdict(list)
 for idx, name in enumerate(df["TRACK_NAME"]):
     name_to_index[name.upper()].append(idx)
 
+#Song Suggestion
+df["TRACK_NAME_UPPER"] = df["TRACK_NAME"].str.upper()
 
 #Video Search
 def get_song_video(song_name, artists = None):
@@ -35,7 +36,6 @@ def get_song_video(song_name, artists = None):
     except Exception as e:
         print(f"[YouTube Fetch Error]: {e}")
         return None, None
-#Video Search Updated With Try-Catch
 
 # Optimized Song Index Finding
 def get_song_index(song_name):
@@ -44,8 +44,12 @@ def get_song_index(song_name):
         return None
     return result[0]
 
-#Song Suggestion
-df["TRACK_NAME_UPPER"] = df["TRACK_NAME"].str.upper()
+def index_to_suggestion(index, k):
+    if index >= len(df) or index < 0:
+        return None, None
+
+    distances, indices = model_kn.kneighbors([embeddings[index]], n_neighbors = k + 1)
+    return df.iloc[index], df.iloc[indices[0][1:]]
 
 def get_song_suggestion(song_name_input, k = 8):
     index = get_song_index(song_name_input)
@@ -61,12 +65,7 @@ def get_song_suggestion(song_name_input, k = 8):
     if index is None:
         return None, None
 
-    try:
-        distances, indices = model_kn.kneighbors([embeddings[index]], n_neighbors=k+1)
-        return df.iloc[index], df.iloc[indices[0][1:]]
-    except Exception as e:
-        print(f"KNN error: {e}")
-        return None, None
+    return index_to_suggestion(index, k)
     
 def get_dropdown_names(query = ""):
     if query == "":
@@ -86,16 +85,15 @@ def get_dropdown_names(query = ""):
     return tuple_list
 
 @app.route("/suggestname", methods = ["GET"])
-def suggestion_api():
+def suggestion_name_api():
     song_name = request.args.get("song")
     k = request.args.get("k", default = 8, type = int)
 
-    print(f"Request received for \"{song_name}\" \'{k}\'")
+    print(f"Request received for name = \"{song_name}\", k = \'{k}\'")
 
     if not song_name:
         return jsonify({ "error": "Song is needed" }), 400
 
-    # song, suggestions = get_song_suggestion(song_name, k)
     try:
         song, suggestions = get_song_suggestion(song_name, k)
     except Exception as e:
@@ -107,7 +105,43 @@ def suggestion_api():
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
     
-    # song["THUMBNAIL"], song["VIDEO_LINK"] = get_song_video(song["TRACK_NAME"], song["ARTISTS"])  #not needed
+    for suggested_song in suggestions:
+        try:
+            suggested_song["THUMBNAIL"], suggested_song["VIDEO_LINK"] = get_song_video(
+                suggested_song["TRACK_NAME"], 
+                suggested_song["ARTISTS"]
+            )
+        except Exception as e:
+            print(f"Error fetching video: {e}")
+            suggested_song["THUMBNAIL"] = None
+            suggested_song["VIDEO_LINK"] = None
+
+    return jsonify({
+        "song": song,
+        "suggestions": suggestions
+    }), 200
+
+@app.route("/suggestindex", methods = ["GET"])
+def suggestion_index_api():
+    index = request.args.get("i", type = int)
+    k = request.args.get("k", default = 8, type = int)
+
+    print(f"Request received for index = \"{index}\", k = \'{k}\'")
+
+    if index < 0:
+        return jsonify({ "error": "Valid index needed" }), 400
+
+    try:
+        song, suggestions = index_to_suggestion(index, k)
+    except Exception as e:
+        print(f"Error in Suggestion")
+
+    if song is None:
+        return jsonify({ "error": "Unable to find songs" }), 404
+    
+    song = song.to_dict()
+    suggestions = suggestions.to_dict(orient = "records")
+    
     for suggested_song in suggestions:
         try:
             suggested_song["THUMBNAIL"], suggested_song["VIDEO_LINK"] = get_song_video(
