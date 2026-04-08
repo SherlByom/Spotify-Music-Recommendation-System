@@ -37,8 +37,12 @@ function renderCards(items) {
 }
 
 async function handleRecommend() {
-  url = `http://localhost:5000/suggest?`; 
+  // const url1 = `http://localhost:5000/suggestname?`;
+  // const url2 = `http://localhost:5000/suggestindex?`;
   const k = 8;
+
+  // const url = suggestionClicked ? url2 : url1;
+  const url = `http://localhost:5000/suggest?`;
 
   const value = input.value.trim();
 
@@ -75,10 +79,16 @@ async function handleRecommend() {
   }
 }
 
+function getDropdown() {
+  const url = `http://localhost:5000/dropdownquery?`;
+}
+
 button.addEventListener("click", handleRecommend);
 input.addEventListener("keydown", (event) => {
   if (event.key === "Enter")
     handleRecommend();
+  else
+    getDropdown();
 });
 
 const style = document.createElement("style");

@@ -57,6 +57,7 @@ def get_song_suggestion(song_name_input, k = 8):
             index = song_tuple[2] if (len(song_tuple[0]) > len(song_name_input) * 0.6) and (song_tuple[1] > fuzzy_threshold) else None
             if index is not None:
                 break
+            
     if index is None:
         return None, None
 
@@ -66,8 +67,25 @@ def get_song_suggestion(song_name_input, k = 8):
     except Exception as e:
         print(f"KNN error: {e}")
         return None, None
+    
+def get_dropdown_names(query = ""):
+    if query == "":
+        return []
+    
+    fuzzy_threshold = 75
+    tuple_list = []
 
-@app.route("/suggest", methods = ["GET"])
+    song_tuples = rf.process.extract(query.upper(), df["TRACK_NAME_UPPER"], scorer = rf.fuzz.token_sort_ratio, limit = 10)
+    for song_tuple in song_tuples:
+        if (len(song_tuple[0]) > len(query) * 0.6) and (song_tuple[1] > fuzzy_threshold):
+            tuple_list.append(song_tuple)
+
+    if len(tuple_list) == 0:
+        return None
+    
+    return tuple_list
+
+@app.route("/suggestname", methods = ["GET"])
 def suggestion_api():
     song_name = request.args.get("song")
     k = request.args.get("k", default = 8, type = int)
@@ -75,7 +93,7 @@ def suggestion_api():
     print(f"Request received for \"{song_name}\" \'{k}\'")
 
     if not song_name:
-        return jsonify({ "error": "Song is needed" }),400
+        return jsonify({ "error": "Song is needed" }), 400
 
     # song, suggestions = get_song_suggestion(song_name, k)
     try:
@@ -84,7 +102,7 @@ def suggestion_api():
         print(f"Error in Suggestion")
 
     if song is None:
-        return jsonify({ "error": "Unable to find songs" }),404
+        return jsonify({ "error": "Unable to find songs" }), 404
     
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
@@ -105,7 +123,14 @@ def suggestion_api():
         "song": song,
         "suggestions": suggestions
     }), 200
-    
+
+@app.route("/dropdownquery", methods = ["GET"])
+def dropdown_api():
+    query = request.args.get("q")
+    print(f"Dropdown suggestion for {query}")
+    tuples = get_dropdown_names(query)
+
+    return jsonify({ "songs": tuples })
 
 # Only for testing, will be removed when deploying
 app.run(host = "0.0.0.0", port = 5000)
