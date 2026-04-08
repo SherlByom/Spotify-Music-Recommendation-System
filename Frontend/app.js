@@ -43,7 +43,7 @@ async function handleRecommend() {
   const value = input.value.trim();
 
   helper.style.color = "var(--muted)";
-  helper.textContent = "Searchnig for suggestions, please wait..."
+  helper.textContent = "Searching for suggestions, please wait..."
 
   if (!value) {
     helper.textContent = "Type a song to get recommendations.";
@@ -53,12 +53,12 @@ async function handleRecommend() {
   try {
     const suggestionUrl = `${url}song=${value}&k=${k}`;
     const response = await fetch(suggestionUrl);
-
+    
     if (!response.ok)
-      throw new Error("Network Error");
+      throw new Error("Unable to find");
 
     const result = await response.json();
-    
+
     if (result.error)
       throw new Error(result.error);
 
@@ -70,7 +70,7 @@ async function handleRecommend() {
   }
   catch (error) {
     helper.style.color = "#ff4343";
-    helper.textContent = `Something went wrong`;
+    helper.textContent = `${error.message}`;
     return;
   }
 }
