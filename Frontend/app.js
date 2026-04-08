@@ -42,7 +42,7 @@ async function handleRecommend() {
   const k = 8;
 
   // const url = suggestionClicked ? url2 : url1;
-  const url = `http://localhost:5000/suggest?`;
+  const url = `http://localhost:5000/suggestname?`;
 
   const value = input.value.trim();
 
