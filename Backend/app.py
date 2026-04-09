@@ -59,14 +59,13 @@ def get_song_index(song_name):
 def index_to_suggestion(index, k):
     if index >= len(df) or index < 0:
         return None, None
-
     distances, indices = model_kn.kneighbors([embeddings[index]], n_neighbors = k + 1)
     return df.iloc[index], df.iloc[indices[0][1:]]
 
 def get_song_suggestion(song_name_input, k = 8):
     index = get_song_index(song_name_input)
     fuzzy_threshold = 75
-    
+
     if index is None:
         song_tuples = rf.process.extract(song_name_input.upper(), df["TRACK_NAME_UPPER"], scorer = rf.fuzz.token_sort_ratio, limit = 10)
         for song_tuple in song_tuples:
@@ -76,7 +75,6 @@ def get_song_suggestion(song_name_input, k = 8):
             
     if index is None:
         return None, None
-
     return index_to_suggestion(index, k)
     
 def get_dropdown_names(query = ""):
@@ -118,7 +116,7 @@ def suggestion_name_api():
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
     
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         suggestions = list(executor.map(enrich_song_with_video, suggestions))
 
     return jsonify({
@@ -148,7 +146,7 @@ def suggestion_index_api():
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
     
-    with ThreadPoolExecutor(max_workers=5) as executor:
+    with ThreadPoolExecutor(max_workers=8) as executor:
         suggestions = list(executor.map(enrich_song_with_video, suggestions))
 
     return jsonify({
