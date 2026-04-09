@@ -116,7 +116,7 @@ def suggestion_name_api():
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
     
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         suggestions = list(executor.map(enrich_song_with_video, suggestions))
 
     return jsonify({
@@ -146,7 +146,7 @@ def suggestion_index_api():
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
     
-    with ThreadPoolExecutor(max_workers=8) as executor:
+    with ThreadPoolExecutor(max_workers=5) as executor:
         suggestions = list(executor.map(enrich_song_with_video, suggestions))
 
     return jsonify({

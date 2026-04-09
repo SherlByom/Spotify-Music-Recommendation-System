@@ -3,6 +3,7 @@ const cards = document.getElementById("cards");
 const helper = document.getElementById("helper");
 const input = document.getElementById("query");
 const button = document.getElementById("go");
+const dropdown = document.getElementById("dropdown");
 
 let dropdownElementClicked = false;
 let selectedIndex = -1;
@@ -46,8 +47,11 @@ async function handleRecommend() {
   const value = input.value.trim();
   const k = 8;
 
+  
   helper.style.color = "var(--muted)";
   helper.textContent = "Searching for suggestions, please wait...";
+  results.style.display = "none";
+  dropdown.style.display = "none";
 
   if (!value) {
     helper.textContent = "Type a song to get recommendations.";
@@ -82,6 +86,9 @@ async function handleRecommend() {
 async function getDropdown() {
   const url = `http://localhost:5000/dropdownquery?`;
   const query = input.value.trim();
+  
+  dropdown.replaceChildren();
+  dropdown.style.display = "flex";
 
   if (query.length < 2)
     return;
@@ -98,10 +105,26 @@ async function getDropdown() {
     if (result.error)
       throw new Error(result.error);
 
-    result.tuples.forEach((name, score, index) => {
-      console.log(name);
-      console.log(score);
-      console.log(index);
+    let i = 1;
+    result.tuples.forEach(tuple => {
+      console.log(tuple.name);
+      console.log(tuple.artists);
+      console.log(tuple.genre);
+      console.log(tuple.index);
+
+      const suggestionButton = document.createElement("button");
+      suggestionButton.textContent = `${tuple.name} - ${tuple.artists.replaceAll(";", ", ")}`;
+      suggestionButton.className = "dropdown-item";
+      suggestionButton.id = `${i++}`;
+      suggestionButton.type = "button";
+      suggestionButton.addEventListener("click", () => {
+        dropdownElementClicked = true;
+        selectedIndex = tuple.index;
+        input.value = tuple.name;
+        dropdown.replaceChildren();
+      });
+
+      dropdown.appendChild(suggestionButton);
     });
   }
   catch (error) {
@@ -118,7 +141,6 @@ input.addEventListener("keydown", (event) => {
     dropdownElementClicked = false;
 
     clearTimeout(debounceTimer);
-    
     debounceTimer = setTimeout(() => {
       getDropdown();
     }, 300);

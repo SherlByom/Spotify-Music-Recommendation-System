@@ -9,6 +9,11 @@
   --accent: #00f5d4;
   --accent-2: #ff7b2e;
   --glow: rgba(0, 245, 212, 0.35);
+  
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 * {
@@ -125,6 +130,10 @@ body {
   gap: 12px;
 }
 
+.input-dropdown-wrapper {
+  position: relative;
+}
+
 input[type="text"] {
   width: 100%;
   background: var(--panel-2);
@@ -140,6 +149,33 @@ input[type="text"]:focus {
   outline: none;
   border-color: #ff43436f;
   box-shadow: 0 0 7px 3px #ff43436f;
+}
+
+.dropdown {
+  display: flex;
+  position: absolute;
+  background-color: var(--panel-2);
+  border-radius: 12px;
+  flex-direction: column;
+  gap: 4px;
+  top: 100%;
+  width: 100%;
+  min-height: 0px;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-color: #ff43439c transparent;
+  z-index: 1;
+}
+
+.dropdown-item {
+  position: relative;
+  background-color: rgba(173, 216, 230, 0);
+  border: none;
+  height: 40px;
+}
+
+.dropdown-item:hover {
+  box-shadow: 0 0px 30px #ff43435e;
 }
 
 button {
@@ -190,7 +226,7 @@ button:hover {
 
 .card {
   background: rgba(18, 19, 26, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.08);
   border-radius: 16px;
   padding: 16px;
   display: grid;
@@ -202,7 +238,7 @@ button:hover {
 .card:hover {
   cursor: pointer;
   transform: translateY(-4px);
-  border-color: #ff43436f;
+  border-color: #ff4343a0;
 }
 
 .card:hover::before {
@@ -239,6 +275,7 @@ button:hover {
 
 .dot {
   opacity: 0.5;
+  z-index: -1;
 }
 
 @keyframes float {
