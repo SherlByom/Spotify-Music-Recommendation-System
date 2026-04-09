@@ -164,6 +164,9 @@ def dropdown_api():
     print(f"Dropdown suggestion for {query}")
     tuples = get_dropdown_names(query)
 
+    if not tuples:
+        return jsonify({ "tuples": [] })
+
     tuples_list = []
     for item in tuples:
         index = item[2]
