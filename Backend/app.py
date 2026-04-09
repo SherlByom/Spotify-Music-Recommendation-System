@@ -164,7 +164,7 @@ def dropdown_api():
     print(f"Dropdown suggestion for {query}")
     tuples = get_dropdown_names(query)
 
-    return jsonify({ "songs": tuples })
+    return jsonify({ "tuples": tuples })
 
 # Only for testing, will be removed when deploying
 app.run(host = "0.0.0.0", port = 5000)
