@@ -6,7 +6,6 @@ from flask_cors import CORS
 from collections import defaultdict
 from flask import Flask, request, jsonify
 from youtubesearchpython import VideosSearch
-from concurrent.futures import ThreadPoolExecutor
 
 app = Flask(__name__)
 CORS(app)
@@ -38,17 +37,6 @@ def get_song_video(song_name, artists = None):
         print(f"[YouTube Fetch Error]: {e}")
         return None, None
 
-def enrich_song_with_video(song):
-    try:
-        thumb, link = get_song_video(song["TRACK_NAME"], song["ARTISTS"])
-        song["THUMBNAIL"] = thumb
-        song["VIDEO_LINK"] = link
-    except Exception as e:
-        print(f"Error fetching video: {e}")
-        song["THUMBNAIL"] = None
-        song["VIDEO_LINK"] = None
-    return song
-
 # Optimized Song Index Finding
 def get_song_index(song_name):
     result = name_to_index.get(song_name.upper())
@@ -59,13 +47,14 @@ def get_song_index(song_name):
 def index_to_suggestion(index, k):
     if index >= len(df) or index < 0:
         return None, None
+
     distances, indices = model_kn.kneighbors([embeddings[index]], n_neighbors = k + 1)
     return df.iloc[index], df.iloc[indices[0][1:]]
 
 def get_song_suggestion(song_name_input, k = 8):
     index = get_song_index(song_name_input)
     fuzzy_threshold = 75
-
+    
     if index is None:
         song_tuples = rf.process.extract(song_name_input.upper(), df["TRACK_NAME_UPPER"], scorer = rf.fuzz.token_sort_ratio, limit = 10)
         for song_tuple in song_tuples:
@@ -75,6 +64,7 @@ def get_song_suggestion(song_name_input, k = 8):
             
     if index is None:
         return None, None
+
     return index_to_suggestion(index, k)
     
 def get_dropdown_names(query = ""):
@@ -108,7 +98,6 @@ def suggestion_name_api():
         song, suggestions = get_song_suggestion(song_name, k)
     except Exception as e:
         print(f"Error in Suggestion")
-        return jsonify({"error": "Internal server error"}), 500
 
     if song is None:
         return jsonify({ "error": "Unable to find songs" }), 404
@@ -116,8 +105,16 @@ def suggestion_name_api():
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
     
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        suggestions = list(executor.map(enrich_song_with_video, suggestions))
+    for suggested_song in suggestions:
+        try:
+            suggested_song["THUMBNAIL"], suggested_song["VIDEO_LINK"] = get_song_video(
+                suggested_song["TRACK_NAME"], 
+                suggested_song["ARTISTS"]
+            )
+        except Exception as e:
+            print(f"Error fetching video: {e}")
+            suggested_song["THUMBNAIL"] = None
+            suggested_song["VIDEO_LINK"] = None
 
     return jsonify({
         "song": song,
@@ -138,7 +135,6 @@ def suggestion_index_api():
         song, suggestions = index_to_suggestion(index, k)
     except Exception as e:
         print(f"Error in Suggestion")
-        return jsonify({"error": "Internal server error"}), 500
 
     if song is None:
         return jsonify({ "error": "Unable to find songs" }), 404
@@ -146,8 +142,16 @@ def suggestion_index_api():
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
     
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        suggestions = list(executor.map(enrich_song_with_video, suggestions))
+    for suggested_song in suggestions:
+        try:
+            suggested_song["THUMBNAIL"], suggested_song["VIDEO_LINK"] = get_song_video(
+                suggested_song["TRACK_NAME"], 
+                suggested_song["ARTISTS"]
+            )
+        except Exception as e:
+            print(f"Error fetching video: {e}")
+            suggested_song["THUMBNAIL"] = None
+            suggested_song["VIDEO_LINK"] = None
 
     return jsonify({
         "song": song,
