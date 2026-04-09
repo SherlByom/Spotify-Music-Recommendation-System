@@ -164,7 +164,12 @@ def dropdown_api():
     print(f"Dropdown suggestion for {query}")
     tuples = get_dropdown_names(query)
 
-    return jsonify({ "tuples": tuples })
+    tuples_list = []
+    for item in tuples:
+        index = item[2]
+        tuples_list.append({ "name": df.iloc[index]["TRACK_NAME"], "artists": df.iloc[index]["ARTISTS"], "genre": df.iloc[index]["TRACK_GENRE"], "index": index })
+
+    return jsonify({ "tuples": tuples_list })
 
 # Only for testing, will be removed when deploying
 app.run(host = "0.0.0.0", port = 5000)

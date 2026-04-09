@@ -83,6 +83,9 @@ async function getDropdown() {
   const url = `http://localhost:5000/dropdownquery?`;
   const query = input.value.trim();
 
+  if (query.length < 2)
+    return;
+
   try {
     const suggestionUrl = `${url}q=${query}`;
     const response = await fetch(suggestionUrl);
