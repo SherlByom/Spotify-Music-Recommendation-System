@@ -98,6 +98,7 @@ def suggestion_name_api():
         song, suggestions = get_song_suggestion(song_name, k)
     except Exception as e:
         print(f"Error in Suggestion")
+        return jsonify({"error": "Internal server error"}), 500
 
     if song is None:
         return jsonify({ "error": "Unable to find songs" }), 404
@@ -135,6 +136,7 @@ def suggestion_index_api():
         song, suggestions = index_to_suggestion(index, k)
     except Exception as e:
         print(f"Error in Suggestion")
+        return jsonify({"error": "Internal server error"}), 500
 
     if song is None:
         return jsonify({ "error": "Unable to find songs" }), 404
