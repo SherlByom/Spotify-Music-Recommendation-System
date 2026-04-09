@@ -106,13 +106,19 @@ async function getDropdown() {
   }
 }
 
+let debounceTimer;
 button.addEventListener("click", handleRecommend);
 input.addEventListener("keydown", (event) => {
   if (event.key === "Enter")
     handleRecommend();
   else if (/^[a-z0-9]$/i.test(event.key)) {
     dropdownElementClicked = false;
-    getDropdown();
+
+    clearTimeout(debounceTimer);
+    
+    debounceTimer = setTimeout(() => {
+      getDropdown();
+    }, 300);
   }
 });
 
