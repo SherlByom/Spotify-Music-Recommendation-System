@@ -1,11 +1,12 @@
 import joblib
+import asyncio
 import pandas as pd
 import rapidfuzz as rf
 import Packages.autoencoder
 from flask_cors import CORS
 from collections import defaultdict
 from flask import Flask, request, jsonify
-from youtubesearchpython import VideosSearch
+from youtubesearchpython.future import VideosSearch
 
 app = Flask(__name__)
 CORS(app)
@@ -25,13 +26,14 @@ for idx, name in enumerate(df["TRACK_NAME"]):
 df["TRACK_NAME_UPPER"] = df["TRACK_NAME"].str.upper()
 
 #Video Search
-def get_song_video(song_name, artists = None):
+async def get_song_video(song_name, artists = None):
     try:
         search_query = f"{song_name} {(artists or "").replace(';', ' ')}"
-        result = VideosSearch(search_query, limit = 1).result()["result"]
+        search = VideosSearch(search_query, limit = 1).result()
+        result = await search.next()
         if not result:
             return None, None
-        video = result[0]
+        video = result["result"][0]
         return video["thumbnails"][0]["url"], video["link"]
     except Exception as e:
         print(f"[YouTube Fetch Error]: {e}")
@@ -144,10 +146,10 @@ def suggestion_index_api():
     
     for suggested_song in suggestions:
         try:
-            suggested_song["THUMBNAIL"], suggested_song["VIDEO_LINK"] = get_song_video(
+            suggested_song["THUMBNAIL"], suggested_song["VIDEO_LINK"] = asyncio.run(get_song_video(
                 suggested_song["TRACK_NAME"], 
                 suggested_song["ARTISTS"]
-            )
+            ))
         except Exception as e:
             print(f"Error fetching video: {e}")
             suggested_song["THUMBNAIL"] = None
