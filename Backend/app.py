@@ -148,16 +148,8 @@ def suggestion_index_api():
     song = song.to_dict()
     suggestions = suggestions.to_dict(orient = "records")
     
-    for suggested_song in suggestions:
-        try:
-            suggested_song["THUMBNAIL"], suggested_song["VIDEO_LINK"] = get_song_video(
-                suggested_song["TRACK_NAME"], 
-                suggested_song["ARTISTS"]
-            )
-        except Exception as e:
-            print(f"Error fetching video: {e}")
-            suggested_song["THUMBNAIL"] = None
-            suggested_song["VIDEO_LINK"] = None
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        suggestions = list(executor.map(enrich_song_with_video, suggestions))
 
     return jsonify({
         "song": song,
