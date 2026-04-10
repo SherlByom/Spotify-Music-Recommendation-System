@@ -29,7 +29,7 @@ df["TRACK_NAME_UPPER"] = df["TRACK_NAME"].str.upper()
 async def get_song_video(song_name, artists = None):
     try:
         search_query = f"{song_name} {(artists or "").replace(';', ' ')}"
-        search = VideosSearch(search_query, limit = 1).result()
+        search = VideosSearch(search_query, limit = 1)
         result = await search.next()
         if not result:
             return None, None

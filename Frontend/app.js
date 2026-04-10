@@ -87,7 +87,6 @@ async function getDropdown() {
   const url = `http://localhost:5000/dropdownquery?`;
   const query = input.value.trim();
   
-  dropdown.replaceChildren();
   dropdown.style.display = "flex";
 
   if (query.length < 2)
@@ -107,11 +106,6 @@ async function getDropdown() {
 
     let i = 1;
     result.tuples.forEach(tuple => {
-      console.log(tuple.name);
-      console.log(tuple.artists);
-      console.log(tuple.genre);
-      console.log(tuple.index);
-
       const suggestionButton = document.createElement("button");
       suggestionButton.textContent = `${tuple.name} - ${tuple.artists.replaceAll(";", ", ")}`;
       suggestionButton.className = "dropdown-item";
@@ -133,19 +127,28 @@ async function getDropdown() {
 }
 
 let debounceTimer;
-button.addEventListener("click", handleRecommend);
 input.addEventListener("keydown", (event) => {
   if (event.key === "Enter")
     handleRecommend();
-  else if (/^[a-z0-9]$/i.test(event.key)) {
-    dropdownElementClicked = false;
-
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => {
-      getDropdown();
-    }, 300);
+  else {
+    dropdown.replaceChildren();
+    if (/^[a-z0-9]$/i.test(event.key)) {
+      dropdownElementClicked = false;
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        getDropdown();
+      }, 300);
+    }
   }
 });
+
+input.addEventListener("blur", function () {
+  setTimeout(() => {
+    dropdown.style.display = "none";
+  }, 150);
+});
+
+button.addEventListener("click", handleRecommend);
 
 const style = document.createElement("style");
 style.textContent = `
