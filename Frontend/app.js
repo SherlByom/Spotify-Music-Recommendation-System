@@ -1,4 +1,7 @@
-﻿const results = document.getElementById("results");
+﻿let mainController = null;
+let dropdownController = null;
+
+const results = document.getElementById("results");
 const cards = document.getElementById("cards");
 const helper = document.getElementById("helper");
 const input = document.getElementById("query");
@@ -59,8 +62,13 @@ async function handleRecommend() {
   }
 
   try {
+    if (mainController)
+      mainController.abort();
+
+    mainController = new AbortController();
+
     const suggestionUrl = dropdownElementClicked ? `${url}i=${selectedIndex}&k=${k}` : `${url}song=${value}&k=${k}`;
-    const response = await fetch(suggestionUrl);
+    const response = await fetch(suggestionUrl, { signal: mainController.signal });
     
     if (!response.ok)
       throw new Error("Unable to find");
@@ -93,8 +101,13 @@ async function getDropdown() {
     return;
 
   try {
+    if (dropdownController)
+      dropdownController.abort();
+
+    dropdownController = new AbortController();
+    
     const suggestionUrl = `${url}q=${query}`;
-    const response = await fetch(suggestionUrl);
+    const response = await fetch(suggestionUrl, { signal: dropdownController.signal });
 
     if (!response.ok)
       throw new Error("Unable to find");
@@ -130,15 +143,13 @@ let debounceTimer;
 input.addEventListener("keydown", (event) => {
   if (event.key === "Enter")
     handleRecommend();
-  else {
+  else if (/^[a-z0-9]$/i.test(event.key) || event.key === "Backspace") {
     dropdown.replaceChildren();
-    if (/^[a-z0-9]$/i.test(event.key)) {
-      dropdownElementClicked = false;
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        getDropdown();
-      }, 300);
-    }
+    dropdownElementClicked = false;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      getDropdown();
+    }, 300);
   }
 });
 
