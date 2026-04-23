@@ -176,6 +176,7 @@ input[type="text"]:focus {
 
 .dropdown-item:hover {
   box-shadow: 0 0px 30px #ff43435e;
+  background-color: #ff434325;
 }
 
 button {
